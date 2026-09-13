@@ -5,7 +5,7 @@ from __future__ import annotations
 from ..core.qt import (COLOR_ALT_BASE, COLOR_BASE, COLOR_BUTTON, COLOR_BUTTON_TEXT,
                        COLOR_HIGHLIGHT, COLOR_HIGHLIGHT_TEXT, COLOR_TEXT,
                        COLOR_TOOLTIP_BASE, COLOR_TOOLTIP_TEXT, COLOR_WINDOW,
-                       COLOR_WINDOW_TEXT, QtGui, QtWidgets)
+                       COLOR_WINDOW_TEXT, QtGui)
 
 _DARK_PALETTE = {
     COLOR_WINDOW: "#20242a", COLOR_WINDOW_TEXT: "#e6eaee",
@@ -17,15 +17,20 @@ _DARK_PALETTE = {
 
 
 def apply_theme(app, mode: str) -> None:
-    """mode is one of: system, light, dark."""
+    """mode is one of: system, light, dark.
+
+    Fusion is applied unconditionally, including for "system". Windows' native
+    style can end up mismatched with the OS dark/light setting (e.g. tab and
+    list text painted in a color that matches its own background), because it
+    reads some colors from the OS theme and others from Qt's palette. Fusion
+    paints every widget strictly from the QPalette we hand it, so tab bars and
+    list panels always keep readable contrast.
+    """
+    app.setStyle("Fusion")
     if mode == "dark":
-        app.setStyle("Fusion")
         palette = QtGui.QPalette()
         for role, color in _DARK_PALETTE.items():
             palette.setColor(role, QtGui.QColor(color))
         app.setPalette(palette)
-    elif mode == "light":
-        app.setStyle("Fusion")
-        app.setPalette(QtWidgets.QApplication.style().standardPalette())
     else:
-        app.setPalette(QtWidgets.QApplication.style().standardPalette())
+        app.setPalette(app.style().standardPalette())

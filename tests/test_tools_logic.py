@@ -5,6 +5,7 @@ import pytest
 from devtoolbox.tools.base64_tool.logic import decode, encode
 from devtoolbox.tools.hash_tool.logic import hash_file, hash_text
 from devtoolbox.tools.json_formatter.logic import format_json, minify_json, validate
+from devtoolbox.tools.streaming_to_mp3.logic import format_elapsed
 
 
 def test_json_round_trip():
@@ -52,3 +53,9 @@ def test_base64_round_trip(url_safe):
 def test_base64_tolerates_missing_padding():
     assert decode("YWJj") == "abc"
     assert decode("YWJj\n") == "abc"
+
+
+def test_format_elapsed():
+    assert format_elapsed(0) == "00:00"
+    assert format_elapsed(65) == "01:05"
+    assert format_elapsed(-5) == "00:00"

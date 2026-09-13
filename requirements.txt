@@ -1,2 +1,4 @@
 PyQt6>=6.4
 pypdf>=3.9
+lameenc>=1.7
+PyAudioWPatch>=0.2.12.7; platform_system == "Windows"
