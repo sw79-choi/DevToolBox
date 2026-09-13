@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Tests and tooling
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Build output
+build/
+dist/
+*.spec
+
+# Runtime files
+logs/
+config.json
+config.json.tmp
+config.json.bak.*
+config.corrupt.json
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
