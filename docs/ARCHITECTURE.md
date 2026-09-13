@@ -31,13 +31,14 @@ ui/        MainWindow (category tabs -> tool tabs) | Settings dialog
 registry produced (sorted by `ToolMeta.order`), so a category's position is the
 lowest `order` among its tools.
 
-* A category with **one** tool shows that tool directly - no inner tab bar.
-* A category with **several** tools gets an inner `QTabWidget`.
+Each category tab is a `CategoryPage`: a tool list on the left (a
+`QListWidget`) and the selected tool's widget on the right (a
+`QStackedWidget`), even when the category has only one tool.
 
-Tool widgets are built lazily. Each tab holds a `ToolHost`, which constructs the
-real widget in its first `showEvent`. That handles both tab levels at once and
-keeps startup constant no matter how many tools exist. If construction raises,
-the host shows an error page with the traceback instead of taking the app down.
+Tool widgets are built lazily. Each list row holds a `ToolHost`, which
+constructs the real widget in its first `showEvent`. That keeps startup
+constant no matter how many tools exist. If construction raises, the host
+shows an error page with the traceback instead of taking the app down.
 
 ## Boot order
 

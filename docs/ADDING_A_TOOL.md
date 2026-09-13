@@ -136,8 +136,8 @@ page under **Text**.
 
 ## Conventions
 
-**Categories in use:** `Document`, `Text`, `Encoding`. Adding a tool with a new
-category string creates a new top-level tab automatically.
+**Categories in use:** `Document`, `Text`, `Encoding`, `Sound`. Adding a tool
+with a new category string creates a new top-level tab automatically.
 
 **Order ranges** so categories stay grouped:
 
@@ -146,6 +146,7 @@ category string creates a new top-level tab automatically.
 | 10-19 | Document |
 | 20-29 | Text |
 | 30-39 | Encoding |
+| 40-49 | Sound |
 | 100+ | Uncategorised / General |
 
 **Persisting things the user should not see** (last folder, window splitter

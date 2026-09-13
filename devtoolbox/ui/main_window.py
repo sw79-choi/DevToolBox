@@ -43,6 +43,45 @@ class _ErrorPage(QtWidgets.QWidget):
         layout.addLayout(row)
 
 
+class CategoryPage(QtWidgets.QWidget):
+    """One category tab: a list of its tools on the left, the chosen tool on the right."""
+
+    def __init__(self, tools, host_factory, parent=None):
+        super().__init__(parent)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self.list = QtWidgets.QListWidget()
+        self.list.setFixedWidth(180)
+        self.stack = QtWidgets.QStackedWidget()
+        self._ids: List[str] = []
+
+        for plugin in tools:
+            host = host_factory(plugin)
+            item = QtWidgets.QListWidgetItem(plugin.meta.title)
+            item.setToolTip(plugin.meta.description)
+            self.list.addItem(item)
+            self.stack.addWidget(host)
+            self._ids.append(plugin.meta.id)
+
+        self.list.currentRowChanged.connect(self.stack.setCurrentIndex)
+        self.list.setCurrentRow(0)
+
+        layout.addWidget(self.list)
+        layout.addWidget(self.stack, 1)
+
+    def current_tool_id(self):
+        row = self.list.currentRow()
+        return self._ids[row] if 0 <= row < len(self._ids) else None
+
+    def select(self, tool_id: str) -> bool:
+        if tool_id not in self._ids:
+            return False
+        self.list.setCurrentRow(self._ids.index(tool_id))
+        return True
+
+
 class ToolHost(QtWidgets.QWidget):
     """Wrapper for one tool tab. The real widget is built the first time it shows."""
 
@@ -121,21 +160,13 @@ class MainWindow(QtWidgets.QMainWindow):
             grouped.setdefault(plugin.meta.category, []).append(plugin)
 
         for category, tools in grouped.items():
-            if len(tools) == 1:
-                # A single tool needs no inner tab bar.
-                plugin = tools[0]
-                page = ToolHost(plugin, self._context_for(plugin))
-                page.setToolTip(plugin.meta.description)
-                self._hosts[plugin.meta.id] = page
-            else:
-                page = QtWidgets.QTabWidget()
-                page.setDocumentMode(True)
-                for plugin in tools:
-                    host = ToolHost(plugin, self._context_for(plugin))
-                    self._hosts[plugin.meta.id] = host
-                    index = page.addTab(host, plugin.meta.title)
-                    page.setTabToolTip(index, plugin.meta.description)
-                page.currentChanged.connect(self._remember_tab)
+            def make_host(plugin):
+                host = ToolHost(plugin, self._context_for(plugin))
+                self._hosts[plugin.meta.id] = host
+                return host
+
+            page = CategoryPage(tools, make_host)
+            page.list.currentRowChanged.connect(self._remember_tab)
             self.tabs.addTab(page, category)
 
         if errors:
@@ -158,12 +189,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _current_tool_id(self):
         page = self.tabs.currentWidget()
-        if isinstance(page, ToolHost):
-            return page.plugin.meta.id
-        if isinstance(page, QtWidgets.QTabWidget):
-            inner = page.currentWidget()
-            if isinstance(inner, ToolHost):
-                return inner.plugin.meta.id
+        if isinstance(page, CategoryPage):
+            return page.current_tool_id()
         return None
 
     def _remember_tab(self, *_):
@@ -174,16 +201,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def _select_tool(self, tool_id: str) -> bool:
         for i in range(self.tabs.count()):
             page = self.tabs.widget(i)
-            if isinstance(page, ToolHost) and page.plugin.meta.id == tool_id:
+            if isinstance(page, CategoryPage) and page.select(tool_id):
                 self.tabs.setCurrentIndex(i)
                 return True
-            if isinstance(page, QtWidgets.QTabWidget):
-                for j in range(page.count()):
-                    inner = page.widget(j)
-                    if isinstance(inner, ToolHost) and inner.plugin.meta.id == tool_id:
-                        self.tabs.setCurrentIndex(i)
-                        page.setCurrentIndex(j)
-                        return True
         return False
 
     # ------------------------------------------------------------------- menus
